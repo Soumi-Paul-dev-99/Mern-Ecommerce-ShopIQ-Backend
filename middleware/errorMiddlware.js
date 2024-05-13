@@ -1,5 +1,10 @@
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode ? res.statusCode : 500;
+  let statusCode = err.statusCode || 500;
+  if (err.code === 11000) {
+    // Duplicate key error
+    statusCode = 400; // Bad Request
+  }
+
   res.status(statusCode);
 
   res.json({
