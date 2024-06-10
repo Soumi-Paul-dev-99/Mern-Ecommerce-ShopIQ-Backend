@@ -82,7 +82,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (user && passwordIsCorrect) {
     const newUser = await User.findOne({ email }).select("-password");
 
-    res.cookie("/token", token, {
+    res.cookie("token", token, {
       path: "/",
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 864000),
@@ -95,7 +95,6 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Invalid email or password");
   }
-  res.send("Login user ...");
 });
 
 //Logout user
@@ -108,8 +107,65 @@ const logout = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Successfully Loggout Out" });
 });
 
+//Get User
+const getuser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(400);
+    throw new Error("User Not Found");
+  }
+});
+
+// Get Login Status
+const getLoginStatus = asyncHandler(async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.json(false);
+  }
+  //verify token
+  const verified = jwt.verify(token, process.env.JWT_SECRET);
+  if (verified) {
+    res.json(true);
+  } else {
+    res.json(false);
+  }
+});
+
+//update user
+
+const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const { name, phone, address } = user;
+    user.name = req.body.name || name;
+    user.phone = req.body.phone || phone;
+    user.address = req.body.address || address;
+
+    const updateUser = await user.save();
+    res.status(200).json(updateUser);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+const updatePhoto = asyncHandler(async (req, res) => {
+  const { photo } = req.body;
+  const user = await User.findById(req.user._id);
+  user.photo = photo
+  const updateUser = await user.save();
+  res.status(200).json(updateUser);
+})
+
 module.exports = {
   registerUser,
   loginUser,
   logout,
+  getuser,
+  getLoginStatus,
+  updateUser,
+  updatePhoto,
 };
