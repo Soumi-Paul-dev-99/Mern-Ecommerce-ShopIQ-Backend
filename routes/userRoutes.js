@@ -15,7 +15,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/logout", logout);
 router.get("/getUser", protect, getuser);
-router.get("/getUser", protect, getuser);
+
 router.get("/getLoginStatus", getLoginStatus);
 
 router.patch("/updateUser", protect, updateUser);
